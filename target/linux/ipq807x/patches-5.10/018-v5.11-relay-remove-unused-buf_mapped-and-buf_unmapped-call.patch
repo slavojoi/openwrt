@@ -1,0 +1,151 @@
+From 3d03295a7e9194c2318977b44999972ce3609664 Mon Sep 17 00:00:00 2001
+From: Jani Nikula <jani.nikula@intel.com>
+Date: Tue, 15 Dec 2020 20:45:47 -0800
+Subject: [PATCH] relay: remove unused buf_mapped and buf_unmapped callbacks
+
+Patch series "relay: cleanup and const callbacks", v2.
+
+None of the relay users require the use of mutable structs for callbacks,
+however the relay code does.  Instead of assigning default callbacks when
+there is none, add callback wrappers to conditionally call the client
+callbacks if available, and fall back to default behaviour (typically
+no-op) otherwise.
+
+This lets all relay users make their struct rchan_callbacks const data.
+
+This series starts with a number of cleanups first based on Christoph's
+feedback.
+
+This patch (of 9):
+
+No relay client uses the buf_mapped or buf_unmapped callbacks.  Remove
+them.  This makes relay's vm_operations_struct close callback a dummy,
+remove it as well.
+
+Link: https://lkml.kernel.org/r/cover.1606153547.git.jani.nikula@intel.com
+Link: https://lkml.kernel.org/r/c69fff6e0cd485563604240bbfcc028434983bec.1606153547.git.jani.nikula@intel.com
+Signed-off-by: Jani Nikula <jani.nikula@intel.com>
+Suggested-by: Christoph Hellwig <hch@infradead.org>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Kalle Valo <kvalo@codeaurora.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ include/linux/relay.h | 19 -------------------
+ kernel/relay.c        | 34 ----------------------------------
+ 2 files changed, 53 deletions(-)
+
+--- a/include/linux/relay.h
++++ b/include/linux/relay.h
+@@ -102,25 +102,6 @@ struct rchan_callbacks
+ 			     size_t prev_padding);
+ 
+ 	/*
+-	 * buf_mapped - relay buffer mmap notification
+-	 * @buf: the channel buffer
+-	 * @filp: relay file pointer
+-	 *
+-	 * Called when a relay file is successfully mmapped
+-	 */
+-        void (*buf_mapped)(struct rchan_buf *buf,
+-			   struct file *filp);
+-
+-	/*
+-	 * buf_unmapped - relay buffer unmap notification
+-	 * @buf: the channel buffer
+-	 * @filp: relay file pointer
+-	 *
+-	 * Called when a relay file is successfully unmapped
+-	 */
+-        void (*buf_unmapped)(struct rchan_buf *buf,
+-			     struct file *filp);
+-	/*
+ 	 * create_buf_file - create file to represent a relay channel buffer
+ 	 * @filename: the name of the file to create
+ 	 * @parent: the parent of the file to create
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -28,15 +28,6 @@ static DEFINE_MUTEX(relay_channels_mutex
+ static LIST_HEAD(relay_channels);
+ 
+ /*
+- * close() vm_op implementation for relay file mapping.
+- */
+-static void relay_file_mmap_close(struct vm_area_struct *vma)
+-{
+-	struct rchan_buf *buf = vma->vm_private_data;
+-	buf->chan->cb->buf_unmapped(buf, vma->vm_file);
+-}
+-
+-/*
+  * fault() vm_op implementation for relay file mapping.
+  */
+ static vm_fault_t relay_buf_fault(struct vm_fault *vmf)
+@@ -62,7 +53,6 @@ static vm_fault_t relay_buf_fault(struct
+  */
+ static const struct vm_operations_struct relay_file_mmap_ops = {
+ 	.fault = relay_buf_fault,
+-	.close = relay_file_mmap_close,
+ };
+ 
+ /*
+@@ -96,7 +86,6 @@ static void relay_free_page_array(struct
+ static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
+ {
+ 	unsigned long length = vma->vm_end - vma->vm_start;
+-	struct file *filp = vma->vm_file;
+ 
+ 	if (!buf)
+ 		return -EBADF;
+@@ -107,7 +96,6 @@ static int relay_mmap_buf(struct rchan_b
+ 	vma->vm_ops = &relay_file_mmap_ops;
+ 	vma->vm_flags |= VM_DONTEXPAND;
+ 	vma->vm_private_data = buf;
+-	buf->chan->cb->buf_mapped(buf, filp);
+ 
+ 	return 0;
+ }
+@@ -284,22 +272,6 @@ static int subbuf_start_default_callback
+ }
+ 
+ /*
+- * buf_mapped() default callback.  Does nothing.
+- */
+-static void buf_mapped_default_callback(struct rchan_buf *buf,
+-					struct file *filp)
+-{
+-}
+-
+-/*
+- * buf_unmapped() default callback.  Does nothing.
+- */
+-static void buf_unmapped_default_callback(struct rchan_buf *buf,
+-					  struct file *filp)
+-{
+-}
+-
+-/*
+  * create_buf_file_create() default callback.  Does nothing.
+  */
+ static struct dentry *create_buf_file_default_callback(const char *filename,
+@@ -322,8 +294,6 @@ static int remove_buf_file_default_callb
+ /* relay channel default callbacks */
+ static struct rchan_callbacks default_channel_callbacks = {
+ 	.subbuf_start = subbuf_start_default_callback,
+-	.buf_mapped = buf_mapped_default_callback,
+-	.buf_unmapped = buf_unmapped_default_callback,
+ 	.create_buf_file = create_buf_file_default_callback,
+ 	.remove_buf_file = remove_buf_file_default_callback,
+ };
+@@ -509,10 +479,6 @@ static void setup_callbacks(struct rchan
+ 
+ 	if (!cb->subbuf_start)
+ 		cb->subbuf_start = subbuf_start_default_callback;
+-	if (!cb->buf_mapped)
+-		cb->buf_mapped = buf_mapped_default_callback;
+-	if (!cb->buf_unmapped)
+-		cb->buf_unmapped = buf_unmapped_default_callback;
+ 	if (!cb->create_buf_file)
+ 		cb->create_buf_file = create_buf_file_default_callback;
+ 	if (!cb->remove_buf_file)
