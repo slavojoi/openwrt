@@ -7,6 +7,7 @@
 board=$(board_name)
 
 case "$FIRMWARE" in
+"ath11k/IPQ8074/hw2.0/cal-ahb-c000000.wifi.bin" |\
 "ath11k/IPQ8074/hw2.0/caldata.bin")
 	case "$board" in
 	edimax,cax1800|\
@@ -17,6 +18,7 @@ case "$FIRMWARE" in
 		;;
 	esac
 	;;
+"ath11k/QCN9074/hw1.0/cal-pci-0000:01:00.0.bin" |\
 "ath11k/QCN9074/hw1.0/caldata.bin")
 	case "$board" in
 	xiaomi,ax9000)
