@@ -29,7 +29,20 @@ jobs:
                 echo "CONFIG_PACKAGE_kmod-qca-nss-drv-pppoe=y\n" >> .config
                 echo "CONFIG_PACKAGE_kmod-qca-nss-ecm=y\n" >> .config
                 echo "CONFIG_PACKAGE_kmod-qca-nss-drv-bridge-mgr=y\n" >> .config
+                echo "CONFIG_PACKAGE_luci-app-openvpn=y" >> .config
+                echo "CONFIG_PACKAGE_luci-app-wireguard=y" >> .config
+                echo "CONFIG_PACKAGE_openvpn-openssl=y" >> .config
+                echo "CONFIG_PACKAGE_wireguard=y" >> .config
                 make defconfig
+
+            - name: Enable WiFi on default config
+              run: |
+                mkdir -p files/etc/uci-defaults
+                cat > files/etc/uci-defaults/xxx_config << EOF
+                uci set network.lan.ipaddr=192.168.31.1
+                uci set wireless.radio1.disabled=0
+                uci commit
+                EOF
 
             - name: Download package sources
               run: make download V=s
@@ -77,6 +90,6 @@ jobs:
               with:
                 repo_token: "${{ secrets.GITHUB_TOKEN }}"
                 prerelease: true
-                title: "Updated prebuilt images"
+                title: "Updated prebuilt images (rodriguezst)"
                 automatic_release_tag: "ipq807x-latest"
                 files: bin/targets/ipq807x/generic/*
