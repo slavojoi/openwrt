@@ -1,5 +1,5 @@
-name: Build IPQ807x
-on: [push]
+name: Trigger build of remote IPQ807x repo
+on: [workflow_dispatch]
 
 jobs:
     build:
@@ -9,6 +9,9 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v2
+              with:
+                repository: robimarko/openwrt
+                ref: IPQ807x-5.10-backports
 
             - name: Update and install feeds
               run: |
