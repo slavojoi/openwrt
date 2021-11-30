@@ -89,7 +89,7 @@ jobs:
               run: tar xf ipq807xx-images.tar
 
             - name: Extract version information from version.buildinfo
-              run: "echo BUILDINFO=$(cat bin/targets/ipq807x/generic/version.buildinfo)" >> $GITHUB_ENV
+              run: echo "BUILDINFO=$(cat bin/targets/ipq807x/generic/version.buildinfo)" >> $GITHUB_ENV
 
             - name: Create a release
               uses: "marvinpinto/action-automatic-releases@latest"
