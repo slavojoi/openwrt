@@ -26,14 +26,13 @@ jobs:
     name: Build the remote repository
     needs: check
     runs-on: ubuntu-latest
-    if: ${{ needs.check.outputs.commit_age <= 48 }}
+    if: ${{ needs.check.outputs.commit_age <= 24 }}
     steps:
       - name: Testing conditional
         env:
           COMMIT_AGE: ${{ needs.check.outputs.commit_age }}
         run: |
           echo "Build triggered with commit age of $COMMIT_AGE hours"
-          echo "${{ needs.check.outputs.commit_age }}"
   release:
     name: Upload artifacts as release
     needs: build
