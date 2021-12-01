@@ -20,9 +20,8 @@ jobs:
           echo "Hours since last commit: $hours"
       - name: Save as workflow variable
         run: |
+          echo "::set-output name=commit_age::$hours"
           echo "COMMIT_AGE=$hours" >> $GITHUB_ENV
-    outputs:
-      commit_age: ${{ env.COMMIT_AGE }}
   build:
     name: Build the remote repository
     needs: check
