@@ -1,7 +1,8 @@
 name: Check if new build is needed
 on: [push]
 jobs:
-  Check remote repo for new commits
+  check:
+    name: Check remote repo for new commits
     runs-on: ubuntu-latest
     steps:
       - name: Use GitHub API to poll commits
