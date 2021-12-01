@@ -21,3 +21,14 @@ jobs:
       - name: Save as workflow variable
         run: |
           echo "COMMIT_AGE=$hours" >> $GITHUB_ENV
+    outputs:
+      commit_age: ${{ env.COMMIT_AGE }}
+  build:
+    name: Build the remote repository
+    needs: check
+    runs-on: ubuntu-latest
+    if: ${{ needs.check.outputs.commit_age <= 48 }}
+    steps:
+      - name: Testing conditional
+        run: echo "Hello World"
+
