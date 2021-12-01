@@ -34,4 +34,10 @@ jobs:
         run: |
           echo "Build triggered with commit age of $COMMIT_AGE hours"
           echo "${{ needs.check.outputs.commit_age }}"
-
+  release:
+    name: Upload artifacts as release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hello World step
+        run: echo "Hello World"
