@@ -89,7 +89,7 @@ jobs:
           echo 1 > /proc/irq/75/smp_affinity
           
           exit 0
-        EOF
+          EOF
       - name: Enable RX decap offload
         run: |
           mkdir -p files/etc/modules.d
