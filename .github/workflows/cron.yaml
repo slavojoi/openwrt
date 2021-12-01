@@ -1,5 +1,8 @@
-name: Check if new build is needed
-on: [push]
+name: Build remote repo only if new commits were pushed
+on:
+  push:
+  schedule:
+    - cron: '0 7 * * *'
 jobs:
   check:
     name: Check remote repo for new commits
