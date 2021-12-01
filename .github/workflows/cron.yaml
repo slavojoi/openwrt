@@ -30,5 +30,5 @@ jobs:
     if: ${{ needs.check.outputs.commit_age <= 24 }}
     steps:
       - name: Testing conditional
-        run: echo "Hello World"
+        run: echo "Build triggered with commit age of ${{ needs.check.outputs.commit_age }} hours"
 
