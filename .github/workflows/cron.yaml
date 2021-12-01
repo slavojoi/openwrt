@@ -94,7 +94,7 @@ jobs:
         run: |
           mkdir -p files/etc/modules.d
           cat > files/etc/modules.d/ath11k << EOF
-          frame_mode=2
+          ath11k frame_mode=2
           EOF
       - name: Download package sources
         run: make download V=s
