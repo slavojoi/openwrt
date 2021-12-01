@@ -12,18 +12,16 @@ jobs:
           REMOTE_REPOSITORY: robimarko/openwrt
           REMOTE_BRANCH: IPQ807x-5.10-backports
       - name: Calculate hours since last commit
+        id: calc
         run: |
           date="$(jq -r '.commit.author.date' commit.json)"
           timestamp=$(date --utc -d "$date" +%s)
           hours=$(( ( $(date --utc +%s) - $timestamp ) / 3600 ))
           echo "Last commit date: $date"
           echo "Hours since last commit: $hours"
-      - name: Set job output variable
-        id: generate-output
-        run: |
           echo "::set-output name=commit_age::$(echo $hours)"
     outputs:
-      commit_age: ${{ steps.generate-output.outputs.commit_age }}
+      commit_age: ${{ steps.calc.outputs.commit_age }}
   build:
     name: Build the remote repository
     needs: check
