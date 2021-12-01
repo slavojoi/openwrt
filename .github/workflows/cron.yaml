@@ -73,6 +73,23 @@ jobs:
           uci set wireless.radio1.disabled=0
           uci commit
           EOF
+      - name: Apply affinity modifications (by @castiel652) to spread the load to multiple cores
+        run: |
+          mkdir -p files/etc
+          cat > files/etc/rc.local << EOF
+          #assign 4 rx interrupts to each cores
+          echo 8 > /proc/irq/50/smp_affinity
+          echo 4 > /proc/irq/51/smp_affinity
+          echo 2 > /proc/irq/52/smp_affinity
+          echo 1 > /proc/irq/53/smp_affinity
+          
+          #assign 3 tcl completions to 3 CPUs
+          echo 4 > /proc/irq/73/smp_affinity
+          echo 2 > /proc/irq/74/smp_affinity
+          echo 1 > /proc/irq/75/smp_affinity
+          
+          exit 0
+        EOF
       - name: Download package sources
         run: make download V=s
       - name: Build tools
