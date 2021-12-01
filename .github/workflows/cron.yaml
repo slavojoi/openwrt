@@ -21,7 +21,7 @@ jobs:
       - name: Set job output variable
         id: generate-output
         run: |
-          echo "::set-output name=commit_age::$hours"
+          echo "::set-output name=commit_age::$(echo $hours)"
     outputs:
       commit_age: ${{ steps.generate-output.outputs.commit_age }}
   build:
